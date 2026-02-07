@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Be My Valentine ❤️</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+}
+
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: linear-gradient(135deg, #F97796, #CC006B); 
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.screen.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.card {
+  background: white;
+  padding: 40px 50px 60px;
+  border-radius: 24px;
+  text-align: center;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.25);
+  max-width: 420px;
+  width: 90%;
+  animation: heartbeat 2.6s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.015); }
+}
+
+@keyframes panic {
+  0% { transform: translate3d(var(--x), var(--y), 0) rotate(0deg); }
+  25% { transform: translate3d(var(--x), var(--y), 0) rotate(2deg); }
+  50% { transform: translate3d(var(--x), var(--y), 0) rotate(-2deg); }
+  75% { transform: translate3d(var(--x), var(--y), 0) rotate(1deg); }
+  100% { transform: translate3d(var(--x), var(--y), 0) rotate(0deg); }
+}
+
+h1 {
+  margin: 0 0 12px;
+  color: #ff3b6f;
+}
+
+p {
+  margin-bottom: 40px;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.buttons {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+}
+
+button {
+  border: 3px solid #ffffff;
+  padding: 14px 36px;
+  font-size: 1.1rem;
+  border-radius: 999px;
+  cursor: pointer;
+  background: #ff3b6f;
+  color: white;
+  box-shadow: 0 10px 25px rgba(255,59,111,0.35);
+}
+
+#yesLayer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+#yesBtn {
+  position: absolute;
+  pointer-events: auto;
+  transition: transform 0.35s cubic-bezier(.22,.61,.36,1);
+  will-change: transform;
+}
+
+footer {
+  position: fixed;
+  bottom: 20px;
+  width: 100%;
+  text-align: center;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.75);
+  pointer-events: none;
+}
+</style>
+</head>
+
+<body>
+
+<!-- Screen 1 -->
+<div class="screen active" id="screen1">
+  <div class="card">
+    <h1>Will you be my Valentine? 💖</h1>
+    <p>I promise warmth, laughs, and maybe a little chaos.</p>
+
+    <div class="buttons">
+      <button id="yesPlaceholder">YES</button>
+      <button id="noPlaceholder">NO</button>
+    </div>
+  </div>
+</div>
+
+<!-- Screen 2 -->
+<div class="screen" id="screen2">
+  <div class="card">
+    <h1>YYYAAAYY 💖</h1>
+    <p>Looks like I just found my Valentine. Lucky me 🥰</p>
+    <button onclick="location.reload()">Try again 😄</button>
+  </div>
+</div>
+
+<!-- Floating ESCAPING NO -->
+<div id="yesLayer">
+  <button id="yesBtn">NO</button>
+</div>
+
+<footer>© 2026 | Beda-R. D.</footer>
+
+<script>
+const yesBtn = document.getElementById("yesBtn");       // floating NO
+const yesPlaceholder = document.getElementById("yesPlaceholder"); // clickable YES
+const noPlaceholder = document.getElementById("noPlaceholder");   // static NO
+
+let escaped = false;
+
+/* Sync floating NO over static NO */
+function syncYesPosition() {
+  const rect = noPlaceholder.getBoundingClientRect();
+  yesBtn.style.transform = `translate3d(${rect.left}px, ${rect.top}px, 0)`;
+}
+
+/* Dodge logic */
+function dodgeYes() {
+  if (!escaped) {
+    escaped = true;
+    noPlaceholder.style.visibility = "hidden";
+  }
+
+  const padding = 20;
+  const btnW = yesBtn.offsetWidth;
+  const btnH = yesBtn.offsetHeight;
+
+  const maxX = window.innerWidth - btnW - padding;
+  const maxY = window.innerHeight - btnH - padding;
+
+  const x = Math.random() * maxX + padding;
+  const y = Math.random() * maxY + padding;
+
+  yesBtn.style.setProperty('--x', `${x}px`);
+  yesBtn.style.setProperty('--y', `${y}px`);
+
+  yesBtn.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+  yesBtn.style.animation = 'panic 0.35s ease';
+
+  yesBtn.addEventListener('animationend', () => {
+    yesBtn.style.animation = '';
+  }, { once: true });
+}
+
+/* Init */
+window.addEventListener("load", syncYesPosition);
+window.addEventListener("resize", () => {
+  if (!escaped) syncYesPosition();
+});
+
+/* NO dodges */
+yesBtn.addEventListener("mouseenter", dodgeYes);
+yesBtn.addEventListener("mousemove", dodgeYes);
+yesBtn.addEventListener("touchstart", e => {
+  e.preventDefault();
+  dodgeYes();
+}, { passive: false });
+
+/* YES wins */
+yesPlaceholder.addEventListener("click", () => {
+noPlaceholder.style.display = "none";
+yesBtn.style.display = "none";
+
+  document.getElementById("screen1").classList.remove("active");
+  document.getElementById("screen2").classList.add("active");
+});
+</script>
+
+</body>
+</html>
